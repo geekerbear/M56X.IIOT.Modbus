@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<Version>1.0.1</Version>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Folder Include="Server\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="M56X.Core" Version="1.0.45" />
+		<PackageReference Include="System.IO.Ports" Version="9.0.7" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="ErrorMessage.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>ErrorMessage.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="ErrorMessage.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
+
+</Project>

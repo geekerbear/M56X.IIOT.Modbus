@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "M56X.IIOT.Modbus", "M56X.IIOT.Modbus\M56X.IIOT.Modbus.csproj", "{4BF217EC-EEB3-B3DF-AEB7-671CD1EADBDA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "M56X.IIOT.Modbus.Test", "M56X.IIOT.Modbus.Test\M56X.IIOT.Modbus.Test.csproj", "{92F44622-FC44-60BF-AAD7-FB5B2F7F2940}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4BF217EC-EEB3-B3DF-AEB7-671CD1EADBDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BF217EC-EEB3-B3DF-AEB7-671CD1EADBDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BF217EC-EEB3-B3DF-AEB7-671CD1EADBDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BF217EC-EEB3-B3DF-AEB7-671CD1EADBDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92F44622-FC44-60BF-AAD7-FB5B2F7F2940}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92F44622-FC44-60BF-AAD7-FB5B2F7F2940}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92F44622-FC44-60BF-AAD7-FB5B2F7F2940}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92F44622-FC44-60BF-AAD7-FB5B2F7F2940}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {08A31D91-96A6-41C1-9D4D-D04CF0376A09}
+	EndGlobalSection
+EndGlobal

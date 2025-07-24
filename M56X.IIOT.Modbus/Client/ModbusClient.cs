@@ -573,6 +573,25 @@ namespace M56X.IIOT.Modbus.Client
         }
 
         /// <summary>
+        /// 读输入寄存器bit位
+        /// </summary>
+        /// <param name="unitIdentifier"></param>
+        /// <param name="address"></param>
+        /// <param name="bitIndex"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public bool ReadInputBit(byte unitIdentifier, ushort address, byte bitIndex)
+        {
+            if (bitIndex >= 16 || bitIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException($"bitIndex({bitIndex})不合法(0~15)");
+            }
+
+            ushort data = ReadInputRegisters<ushort>(unitIdentifier, address, 1)[0];
+            return data.GetBitValue(bitIndex);
+        }
+
+        /// <summary>
         /// 写保持寄存器bit位
         /// </summary>
         /// <param name="unitIdentifier"></param>

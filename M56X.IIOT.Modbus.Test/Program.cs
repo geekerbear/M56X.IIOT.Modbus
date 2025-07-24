@@ -22,8 +22,7 @@ static void Client_DataMonitor(object? sender, M56X.IIOT.Modbus.EventHandlers.Da
 client.Connect("183.203.153.196");
 
 //var ddd = client.ReadWriteMultipleRegisters<float, float>(1, 0, 2, 0, [222.1f, 333.2f]);
-var ssss = client.ReadBit(1, 0, 1);
-Console.WriteLine(ssss);
+Console.WriteLine(client.ReadInputBit(1, 0, 14));
 Console.ReadLine();
 
 

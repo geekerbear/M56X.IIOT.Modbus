@@ -11,7 +11,7 @@ byte unitIdentifier = 0x01;
 ushort startingAddress = 0;
 ushort registerAddress = 0;
 
-var client = new M56X.IIOT.Modbus.Client.ModbusRtuClient();
+var client = new M56X.IIOT.Modbus.Client.ModbusTcpClient();
 client.DataMonitor += Client_DataMonitor;
 
 static void Client_DataMonitor(object? sender, M56X.IIOT.Modbus.EventHandlers.DataMonitorEventArgs e)
@@ -19,10 +19,11 @@ static void Client_DataMonitor(object? sender, M56X.IIOT.Modbus.EventHandlers.Da
     Console.WriteLine($"{e.Type}: {e.Data.ToHex()}");
 }
 
-client.Connect("COM10");
+client.Connect("183.203.153.196");
 
-var ddd = client.ReadWriteMultipleRegisters<float, float>(1, 0, 2, 0, [222.1f, 333.2f]);
-
+//var ddd = client.ReadWriteMultipleRegisters<float, float>(1, 0, 2, 0, [222.1f, 333.2f]);
+var ssss = client.ReadBit(1, 0, 1);
+Console.WriteLine(ssss);
 Console.ReadLine();
 
 

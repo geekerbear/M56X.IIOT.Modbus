@@ -88,7 +88,7 @@ namespace M56X.IIOT.Modbus {
         }
         
         /// <summary>
-        ///   查找类似 The data address received in the query is not an allowable address for the server. More specifically, the combination of reference number and transfer length is invalid. 的本地化字符串。
+        ///   查找类似 地址错误 的本地化字符串。
         /// </summary>
         internal static string ModbusClient_0x02_IllegalDataAddress {
             get {

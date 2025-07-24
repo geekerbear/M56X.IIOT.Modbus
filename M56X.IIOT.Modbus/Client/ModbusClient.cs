@@ -1,5 +1,6 @@
 ﻿using M56X.Core.Common;
 using M56X.Core.Enums;
+using M56X.Core.Helper;
 using M56X.IIOT.Modbus.Common;
 using M56X.IIOT.Modbus.Enums;
 using M56X.IIOT.Modbus.EventHandlers;
@@ -552,16 +553,44 @@ namespace M56X.IIOT.Modbus.Client
             return dataset2;
         }
 
-        //public Span<bool> ReadHoldingRegistersBit(byte unitIdentifier, ushort address, byte bitIndex, EndiannessType endianness = EndiannessType.ABCD)
-        //{
-        //    if (bitIndex >= 16 || bitIndex < 0)
-        //    {
-        //        throw new ArgumentOutOfRangeException($"bitIndex({bitIndex})不合法(0~15)");
-        //    }
+        /// <summary>
+        /// 读保持寄存器bit位
+        /// </summary>
+        /// <param name="unitIdentifier"></param>
+        /// <param name="address"></param>
+        /// <param name="bitIndex"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public bool ReadBit(byte unitIdentifier, ushort address, byte bitIndex)
+        {
+            if (bitIndex >= 16 || bitIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException($"bitIndex({bitIndex})不合法(0~15)");
+            }
 
-        //    ushort data = ReadHoldingRegisters<ushort>(unitIdentifier, address, 1, endianness)[0];
-        //    data.GetBitValue()
-        //}
+            ushort data = ReadHoldingRegisters<ushort>(unitIdentifier, address, 1)[0];
+            return data.GetBitValue(bitIndex);
+        }
+
+        /// <summary>
+        /// 写保持寄存器bit位
+        /// </summary>
+        /// <param name="unitIdentifier"></param>
+        /// <param name="address"></param>
+        /// <param name="bitIndex"></param>
+        /// <param name="value"></param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public void WriteBit(byte unitIdentifier, ushort address, byte bitIndex, bool value)
+        {
+            if (bitIndex >= 16 || bitIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException($"bitIndex({bitIndex})不合法(0~15)");
+            }
+
+            ushort data = ReadHoldingRegisters<ushort>(unitIdentifier, address, 1)[0];
+            var result = data.SetBitValue(bitIndex, value);
+            WriteSingleRegister(unitIdentifier, address, result);
+        }
 
         #region 释放
         protected virtual void Dispose(bool disposing)

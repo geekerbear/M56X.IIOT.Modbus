@@ -1,28 +1,44 @@
-﻿using M56X.IIOT.Modbus.Enums;
+﻿using M56X.Core.Enums;
 using System.Runtime.InteropServices;
 
 namespace M56X.IIOT.Modbus
 {
     public class ModbusUtils
     {
-        internal static bool SwapBytes(ModbusEndianness endianness)
+        internal static bool SwapBytes(EndiannessType endianness)
         {
-            return (BitConverter.IsLittleEndian && (endianness == ModbusEndianness.ABCD || endianness == ModbusEndianness.BADC)) ||
-                (!BitConverter.IsLittleEndian && (endianness == ModbusEndianness.DCBA || endianness == ModbusEndianness.CDAB));
+            return (BitConverter.IsLittleEndian && (endianness == EndiannessType.ABCD || endianness == EndiannessType.BADC)) ||
+                (!BitConverter.IsLittleEndian && (endianness == EndiannessType.DCBA || endianness == EndiannessType.CDAB));
         }
 
+        /// <summary>
+        /// Short大小端交换
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static short SwitchEndianness(short value)
         {
             var bytes = BitConverter.GetBytes(value);
             return (short)((bytes[0] << 8) + bytes[1]);
         }
 
+        /// <summary>
+        /// UShort大小端交换
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static ushort SwitchEndianness(ushort value)
         {
             var bytes = BitConverter.GetBytes(value);
             return (ushort)((bytes[0] << 8) + bytes[1]);
         }
 
+        /// <summary>
+        /// 大小端交换
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static T SwitchEndianness<T>(T value) where T : unmanaged
         {
             Span<T> data = [value];
@@ -31,6 +47,11 @@ namespace M56X.IIOT.Modbus
             return data[0];
         }
 
+        /// <summary>
+        /// 大小端交换
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dataset"></param>
         public static void SwitchEndianness<T>(Span<T> dataset) where T : unmanaged
         {
             var size = Marshal.SizeOf<T>();
@@ -48,7 +69,11 @@ namespace M56X.IIOT.Modbus
             }
         }
 
-
+        /// <summary>
+        /// 两两字节交换
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dataset"></param>
         public static void SwitchTwoEndianness<T>(Span<T> dataset) where T : unmanaged
         {
             //var size = Marshal.SizeOf<T>();

@@ -7,7 +7,7 @@ using System.Net.Sockets;
 
 namespace M56X.IIOT.Modbus.Client
 {
-    public class ModbusRtuOverTcpClient : ModbusClient
+    public class ModbusRtuOverTcpClient : ModbusNetClient
     {
         private TcpClient? _tcpClient;
         private NetworkStream _networkStream = default!;
@@ -35,12 +35,12 @@ namespace M56X.IIOT.Modbus.Client
         /// </summary>
         internal static int DefaultConnectTimeout { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
 
-        public void Connect(string host = "127.0.0.1", int port = 502)
+        public override void Connect(string host = "127.0.0.1", int port = 502)
         {
             Initialize(new TcpClient(), new IPEndPoint(IPAddress.Parse(host), port));
         }
 
-        public void Disconnect()
+        public override void Disconnect()
         {
             _networkStream?.Dispose();
             _tcpClient?.Close();
@@ -113,7 +113,7 @@ namespace M56X.IIOT.Modbus.Client
 
             //发送的完整数据
             var reqData = frameBuffer.Buffer.ReadBytes(0, frameLength);
-            SetDataMonitor(Core.Enums.DataDirection.TX, reqData.ReadBytes(0, reqData.Length));
+            SetDataMonitor(Core.Enums.DataFlowDirection.Outbound, reqData.ReadBytes(0, reqData.Length));
             _networkStream.Write(reqData);
 
             //接收数据
@@ -147,7 +147,7 @@ namespace M56X.IIOT.Modbus.Client
 
             //返回的完整数据
             var respData = frameBuffer.Buffer.ReadBytes(0, frameLength);
-            SetDataMonitor(Core.Enums.DataDirection.RX, respData.ReadBytes(0, respData.Length));
+            SetDataMonitor(Core.Enums.DataFlowDirection.Inbound, respData.ReadBytes(0, respData.Length));
 
             //解释错误代码
             if (rawFunctionCode == (byte)FunctionCode.Error + (byte)functionCode)

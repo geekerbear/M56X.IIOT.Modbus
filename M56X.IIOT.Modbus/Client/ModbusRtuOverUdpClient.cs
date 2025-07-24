@@ -7,7 +7,7 @@ using M56X.IIOT.Modbus.Enums;
 
 namespace M56X.IIOT.Modbus.Client
 {
-    public class ModbusRtuOverUdpClient : ModbusClient
+    public class ModbusRtuOverUdpClient : ModbusNetClient
     {
         private UdpClient? _udpClient;
         private IPEndPoint? _remoteEndpoint;
@@ -19,12 +19,12 @@ namespace M56X.IIOT.Modbus.Client
         {
         }
 
-        public void Connect(string host = "127.0.0.1", int port = 502)
+        public override void Connect(string host = "127.0.0.1", int port = 502)
         {
             Initialize(new UdpClient(), new IPEndPoint(IPAddress.Parse(host), port));
         }
 
-        public void Disconnect()
+        public override void Disconnect()
         {
             _udpClient?.Close();
             _udpClient?.Dispose();
@@ -93,7 +93,7 @@ namespace M56X.IIOT.Modbus.Client
 
             //发送的完整数据
             var reqData = frameBuffer.Buffer.ReadBytes(0, frameLength);
-            SetDataMonitor(Core.Enums.DataDirection.TX, reqData.ReadBytes(0, reqData.Length));
+            SetDataMonitor(Core.Enums.DataFlowDirection.Outbound, reqData.ReadBytes(0, reqData.Length));
             _udpClient?.Send(reqData, _remoteEndpoint);
 
             //接收数据
@@ -135,7 +135,7 @@ namespace M56X.IIOT.Modbus.Client
 
             //返回的完整数据
             var respData = frameBuffer.Buffer.ReadBytes(0, frameLength);
-            SetDataMonitor(Core.Enums.DataDirection.RX, respData.ReadBytes(0, respData.Length));
+            SetDataMonitor(Core.Enums.DataFlowDirection.Inbound, respData.ReadBytes(0, respData.Length));
 
             //解释错误代码
             if (rawFunctionCode == (byte)FunctionCode.Error + (byte)functionCode)

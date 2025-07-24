@@ -4,8 +4,6 @@ using M56X.IIOT.Modbus.Common;
 using M56X.IIOT.Modbus.Enums;
 using M56X.IIOT.Modbus.EventHandlers;
 using System.Collections;
-using System.Data;
-using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace M56X.IIOT.Modbus.Client
@@ -13,7 +11,7 @@ namespace M56X.IIOT.Modbus.Client
     /// <summary>
     /// Modbus客户端基类
     /// </summary>
-    public abstract partial class ModbusClient : IDisposable
+    public abstract class ModbusClient : IDisposable
     {
         private bool disposedValue;
 
@@ -32,7 +30,7 @@ namespace M56X.IIOT.Modbus.Client
         /// </summary>
         /// <param name="type"></param>
         /// <param name="data"></param>
-        internal void SetDataMonitor(DataDirection type, byte[] data)
+        internal void SetDataMonitor(DataFlowDirection type, byte[] data)
         {
             DataMonitor?.Invoke(this, new DataMonitorEventArgs(type, data));
         }
@@ -51,9 +49,27 @@ namespace M56X.IIOT.Modbus.Client
         /// </summary>
         /// <param name="functionCode"></param>
         /// <param name="exceptionCode"></param>
-        internal void ProcessError(FunctionCode functionCode, ModbusExceptionCode exceptionCode)
+        internal static void ProcessError(FunctionCode functionCode, ModbusExceptionCode exceptionCode)
         {
-            
+            throw exceptionCode switch
+            {
+                ModbusExceptionCode.IllegalFunction => new ModbusException(exceptionCode, ErrorMessage.ModbusClient_0x01_IllegalFunction),
+                ModbusExceptionCode.IllegalDataAddress => new ModbusException(exceptionCode, ErrorMessage.ModbusClient_0x02_IllegalDataAddress),
+                ModbusExceptionCode.IllegalDataValue => functionCode switch
+                {
+                    FunctionCode.WriteMultipleRegisters => new ModbusException(exceptionCode, ErrorMessage.ModbusClient_0x03_IllegalDataValue_0x7B),
+                    FunctionCode.ReadHoldingRegisters or FunctionCode.ReadInputRegisters => new ModbusException(exceptionCode, ErrorMessage.ModbusClient_0x03_IllegalDataValue_0x7D),
+                    FunctionCode.ReadCoils or FunctionCode.ReadDiscreteInputs => new ModbusException(exceptionCode, ErrorMessage.ModbusClient_0x03_IllegalDataValue_0x7D0),
+                    _ => new ModbusException(exceptionCode, ErrorMessage.ModbusClient_0x03_IllegalDataValue),
+                },
+                ModbusExceptionCode.ServerDeviceFailure => new ModbusException(exceptionCode, ErrorMessage.ModbusClient_0x04_ServerDeviceFailure),
+                ModbusExceptionCode.Acknowledge => new ModbusException(exceptionCode, ErrorMessage.ModbusClient_0x05_Acknowledge),
+                ModbusExceptionCode.ServerDeviceBusy => new ModbusException(exceptionCode, ErrorMessage.ModbusClient_0x06_ServerDeviceBusy),
+                ModbusExceptionCode.MemoryParityError => new ModbusException(exceptionCode, ErrorMessage.ModbusClient_0x08_MemoryParityError),
+                ModbusExceptionCode.GatewayPathUnavailable => new ModbusException(exceptionCode, ErrorMessage.ModbusClient_0x0A_GatewayPathUnavailable),
+                ModbusExceptionCode.GatewayTargetDeviceFailedToRespond => new ModbusException(exceptionCode, ErrorMessage.ModbusClient_0x0B_GatewayTargetDeviceFailedToRespond),
+                _ => new ModbusException(exceptionCode, string.Format(ErrorMessage.ModbusClient_Unknown_Error, (int)exceptionCode)),
+            };
         }
 
         private static ushort ConvertSize<T>(ushort count)
@@ -182,8 +198,11 @@ namespace M56X.IIOT.Modbus.Client
         /// <param name="quantity">数量</param>
         /// <param name="swap">是否两两交换(CDAB或BADC)</param>
         /// <returns></returns>
-        public Span<T> ReadHoldingRegisters<T>(byte unitIdentifier, ushort startingAddress, ushort quantity, ModbusEndianness endianness = ModbusEndianness.ABCD) where T : unmanaged
+        public Span<T> ReadHoldingRegisters<T>(byte unitIdentifier, ushort startingAddress, ushort quantity, EndiannessType endianness = EndiannessType.ABCD) where T : unmanaged
         {
+            if (endianness == EndiannessType.DEFAULT)
+                endianness = EndiannessType.ABCD;
+
             ushort count = ConvertSize<T>(quantity);
             var dataset = MemoryMarshal.Cast<byte, T>(
                 ReadHoldingRegisters(unitIdentifier, startingAddress, count));
@@ -193,7 +212,7 @@ namespace M56X.IIOT.Modbus.Client
             if (size >= 2 && ModbusUtils.SwapBytes(endianness))
                 ModbusUtils.SwitchEndianness<T>(dataset);
 
-            if (size >= 4 && (endianness == ModbusEndianness.CDAB || endianness == ModbusEndianness.BADC))
+            if (size >= 4 && (endianness == EndiannessType.CDAB || endianness == EndiannessType.BADC))
                 ModbusUtils.SwitchTwoEndianness<T>(dataset);
 
             return dataset;
@@ -242,8 +261,11 @@ namespace M56X.IIOT.Modbus.Client
         /// <param name="quantity"></param>
         /// <param name="endianness"></param>
         /// <returns></returns>
-        public Span<T> ReadInputRegisters<T>(byte unitIdentifier, ushort startingAddress, ushort quantity, ModbusEndianness endianness = ModbusEndianness.ABCD) where T : unmanaged
+        public Span<T> ReadInputRegisters<T>(byte unitIdentifier, ushort startingAddress, ushort quantity, EndiannessType endianness = EndiannessType.ABCD) where T : unmanaged
         {
+            if (endianness == EndiannessType.DEFAULT)
+                endianness = EndiannessType.ABCD;
+
             ushort count = ConvertSize<T>(quantity);
             var dataset = MemoryMarshal.Cast<byte, T>(
                 ReadInputRegisters(unitIdentifier, startingAddress, count));
@@ -253,13 +275,13 @@ namespace M56X.IIOT.Modbus.Client
             if (size >= 2 && ModbusUtils.SwapBytes(endianness))
                 ModbusUtils.SwitchEndianness<T>(dataset);
 
-            if (size >= 4 && (endianness == ModbusEndianness.CDAB || endianness == ModbusEndianness.BADC))
+            if (size >= 4 && (endianness == EndiannessType.CDAB || endianness == EndiannessType.BADC))
                 ModbusUtils.SwitchTwoEndianness<T>(dataset);
 
             return dataset;
         }
         #endregion
-        
+
         #endregion
 
         #region 写线圈
@@ -359,8 +381,11 @@ namespace M56X.IIOT.Modbus.Client
         /// <param name="startingAddress"></param>
         /// <param name="value"></param>
         /// <param name="endianness"></param>
-        public void WriteSingleRegister(byte unitIdentifier, ushort startingAddress, short value, ModbusEndianness endianness = ModbusEndianness.ABCD)
+        public void WriteSingleRegister(byte unitIdentifier, ushort startingAddress, short value, EndiannessType endianness = EndiannessType.ABCD)
         {
+            if (endianness == EndiannessType.DEFAULT)
+                endianness = EndiannessType.ABCD;
+
             if (ModbusUtils.SwapBytes(endianness))
                 value = ModbusUtils.SwitchEndianness(value);
 
@@ -374,8 +399,11 @@ namespace M56X.IIOT.Modbus.Client
         /// <param name="registerAddress"></param>
         /// <param name="value"></param>
         /// <param name="endianness"></param>
-        public void WriteSingleRegister(byte unitIdentifier, ushort startingAddress, ushort value, ModbusEndianness endianness = ModbusEndianness.ABCD)
+        public void WriteSingleRegister(byte unitIdentifier, ushort startingAddress, ushort value, EndiannessType endianness = EndiannessType.ABCD)
         {
+            if (endianness == EndiannessType.DEFAULT)
+                endianness = EndiannessType.ABCD;
+
             if (ModbusUtils.SwapBytes(endianness))
                 value = ModbusUtils.SwitchEndianness(value);
 
@@ -428,15 +456,18 @@ namespace M56X.IIOT.Modbus.Client
         /// <param name="startingAddress"></param>
         /// <param name="dataset"></param>
         /// <param name="endianness"></param>
-        public void WriteMultipleRegisters<T>(byte unitIdentifier, ushort startingAddress, T[] dataset, ModbusEndianness endianness = ModbusEndianness.ABCD) where T : unmanaged
+        public void WriteMultipleRegisters<T>(byte unitIdentifier, ushort startingAddress, T[] dataset, EndiannessType endianness = EndiannessType.ABCD) where T : unmanaged
         {
+            if (endianness == EndiannessType.DEFAULT)
+                endianness = EndiannessType.ABCD;
+
             var size = Marshal.SizeOf<T>();
 
             var _dataset = dataset.AsSpan();
             if (size >= 2 && ModbusUtils.SwapBytes(endianness))
                 ModbusUtils.SwitchEndianness<T>(_dataset);
 
-            if (size >= 4 && (endianness == ModbusEndianness.CDAB || endianness == ModbusEndianness.BADC))
+            if (size >= 4 && (endianness == EndiannessType.CDAB || endianness == EndiannessType.BADC))
                 ModbusUtils.SwitchTwoEndianness<T>(_dataset);
 
             WriteMultipleRegisters(unitIdentifier, startingAddress, MemoryMarshal.Cast<T, byte>(_dataset).ToArray());
@@ -491,15 +522,18 @@ namespace M56X.IIOT.Modbus.Client
             return buffer[2..];
         }
 
-        public Span<TRead> ReadWriteMultipleRegisters<TRead, TWrite>(byte unitIdentifier, ushort readStartingAddress, ushort readCount, ushort writeStartingAddress, TWrite[] dataset, ModbusEndianness endianness = ModbusEndianness.ABCD) where TRead : unmanaged                                                                                                                                                                   where TWrite : unmanaged
+        public Span<TRead> ReadWriteMultipleRegisters<TRead, TWrite>(byte unitIdentifier, ushort readStartingAddress, ushort readCount, ushort writeStartingAddress, TWrite[] dataset, EndiannessType endianness = EndiannessType.ABCD) where TRead : unmanaged where TWrite : unmanaged
         {
+            if (endianness == EndiannessType.DEFAULT)
+                endianness = EndiannessType.ABCD;
+
             var size = Marshal.SizeOf<TWrite>();
             var _dataset = dataset.AsSpan();
 
             if (size >= 2 && ModbusUtils.SwapBytes(endianness))
                 ModbusUtils.SwitchEndianness<TWrite>(_dataset);
 
-            if (size >= 4 && (endianness == ModbusEndianness.CDAB || endianness == ModbusEndianness.BADC))
+            if (size >= 4 && (endianness == EndiannessType.CDAB || endianness == EndiannessType.BADC))
                 ModbusUtils.SwitchTwoEndianness<TWrite>(_dataset);
 
             var readQuantity = ConvertSize<TRead>(readCount);
@@ -512,18 +546,21 @@ namespace M56X.IIOT.Modbus.Client
             if (size2 >= 2 && ModbusUtils.SwapBytes(endianness))
                 ModbusUtils.SwitchEndianness<TRead>(dataset2);
 
-            if (size2 >= 4 && (endianness == ModbusEndianness.CDAB || endianness == ModbusEndianness.BADC))
+            if (size2 >= 4 && (endianness == EndiannessType.CDAB || endianness == EndiannessType.BADC))
                 ModbusUtils.SwitchTwoEndianness<TRead>(dataset2);
 
             return dataset2;
         }
 
-        //public Span<bool> ReadHoldingRegistersBit(byte unitIdentifier, ushort address, byte bitIndex, byte quantity)
+        //public Span<bool> ReadHoldingRegistersBit(byte unitIdentifier, ushort address, byte bitIndex, EndiannessType endianness = EndiannessType.ABCD)
         //{
         //    if (bitIndex >= 16 || bitIndex < 0)
         //    {
         //        throw new ArgumentOutOfRangeException($"bitIndex({bitIndex})不合法(0~15)");
         //    }
+
+        //    ushort data = ReadHoldingRegisters<ushort>(unitIdentifier, address, 1, endianness)[0];
+        //    data.GetBitValue()
         //}
 
         #region 释放

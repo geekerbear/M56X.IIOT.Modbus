@@ -6,7 +6,7 @@ using System.IO.Ports;
 
 namespace M56X.IIOT.Modbus.Client
 {
-    public partial class ModbusRtuClient : ModbusClient
+    public partial class ModbusRtuClient : ModbusSerialPortClient
     {
         private IModbusRtuSerialPort? _serialPort;
         private ModbusFrameBuffer _frameBuffer = default!;
@@ -48,7 +48,7 @@ namespace M56X.IIOT.Modbus.Client
             //
         }
 
-        public void Connect(string port)
+        public override void Connect(string port)
         {
             var serialPort = new ModbusRtuSerialPort(new SerialPort(port)
             {
@@ -63,7 +63,7 @@ namespace M56X.IIOT.Modbus.Client
             Initialize(serialPort);
         }
 
-        public void Disconnect()
+        public override void Disconnect()
         {
             _serialPort?.Close();
             _frameBuffer?.Dispose();
@@ -120,7 +120,7 @@ namespace M56X.IIOT.Modbus.Client
 
             //发送的完整数据
             var reqData = frameBuffer.Buffer.ReadBytes(0, frameLength);
-            SetDataMonitor(Core.Enums.DataDirection.TX, reqData.ReadBytes(0, reqData.Length));
+            SetDataMonitor(Core.Enums.DataFlowDirection.Outbound, reqData.ReadBytes(0, reqData.Length));
             _serialPort?.Write(reqData, 0, frameLength);
 
             //接收数据
@@ -154,7 +154,7 @@ namespace M56X.IIOT.Modbus.Client
 
             //返回的完整数据
             var respData = frameBuffer.Buffer.ReadBytes(0, frameLength);
-            SetDataMonitor(Core.Enums.DataDirection.RX, respData.ReadBytes(0, respData.Length));
+            SetDataMonitor(Core.Enums.DataFlowDirection.Inbound, respData.ReadBytes(0, respData.Length));
 
             //解释错误代码
             if (rawFunctionCode == (byte)FunctionCode.Error + (byte)functionCode)

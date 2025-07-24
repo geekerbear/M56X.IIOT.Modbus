@@ -10,7 +10,7 @@ namespace M56X.IIOT.Modbus.EventHandlers
         /// <summary>
         /// 数据方向
         /// </summary>
-        public readonly DataDirection Type;
+        public readonly DataFlowDirection Type;
 
         /// <summary>
         /// 数据
@@ -22,7 +22,7 @@ namespace M56X.IIOT.Modbus.EventHandlers
         /// </summary>
         /// <param name="type"></param>
         /// <param name="data"></param>
-        public DataMonitorEventArgs(DataDirection type, byte[] data)
+        public DataMonitorEventArgs(DataFlowDirection type, byte[] data)
         {
             Type = type;
             Data = data;
